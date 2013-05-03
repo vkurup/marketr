@@ -50,7 +50,7 @@ class SurveyUnicodeTest(TestCase):
         sd = datetime.date(2009, 12, 28)
         s = Survey.objects.create(title=t, opens=sd)
         self.assertEqual(unicode(s),
-            u'¿Como est󠁠á usted? (Opens 2009-12-28, closes 2010-01-04)')
+                         u'¿Como est󠁠á usted? (Opens 2009-12-28, closes 2010-01-04)')
 
 
 class QuestionWinningAnswersTest(TestCase):
@@ -80,3 +80,47 @@ class QuestionWinningAnswersTest(TestCase):
         q = Question.objects.get(question='No Answers')
         wa_qs = q.winning_answers()
         self.assertEqual(wa_qs.count(), 0)
+
+
+class SurveyManagerTest(TestCase):
+    def setUp(self):
+        today = datetime.date.today()
+        oneday = datetime.timedelta(1)
+        yesterday = today - oneday
+        tomorrow = today + oneday
+        Survey.objects.all().delete()
+        Survey.objects.create(title="Yesterday", opens=yesterday,
+                              closes=yesterday)
+        Survey.objects.create(title="Today", opens=today,
+                              closes=today)
+        Survey.objects.create(title="Tomorrow", opens=tomorrow,
+                              closes=tomorrow)
+
+    def testCompleted(self):
+        self.assertEqual(Survey.objects.completed().count(), 1)
+        completed_survey = Survey.objects.get(title="Yesterday")
+        self.assertEqual(Survey.objects.completed()[0],
+                         completed_survey)
+        today = datetime.date.today()
+        completed_survey.closes = today
+        completed_survey.save()
+        self.assertEqual(Survey.objects.completed().count(), 0)
+
+    def testActive(self):
+        self.assertEqual(Survey.objects.active().count(), 1)
+        active_survey = Survey.objects.get(title="Today")
+        self.assertEqual(Survey.objects.active()[0], active_survey)
+        yesterday = datetime.date.today() - datetime.timedelta(1)
+        active_survey.opens = active_survey.closes = yesterday
+        active_survey.save()
+        self.assertEqual(Survey.objects.active().count(), 0)
+
+    def testUpcoming(self):
+        self.assertEqual(Survey.objects.upcoming().count(), 1)
+        upcoming_survey = Survey.objects.get(title="Tomorrow")
+        self.assertEqual(Survey.objects.upcoming()[0],
+                         upcoming_survey)
+        yesterday = datetime.date.today() - datetime.timedelta(1)
+        upcoming_survey.opens = yesterday
+        upcoming_survey.save()
+        self.assertEqual(Survey.objects.upcoming().count(), 0)

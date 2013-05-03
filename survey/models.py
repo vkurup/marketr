@@ -2,10 +2,25 @@ import datetime
 from django.db import models
 from django.db.models import Max
 
+
+class SurveyManager(models.Manager):
+    def completed(self):
+        return self.filter(closes__lt=datetime.date.today())
+
+    def active(self):
+        return self.filter(opens__lte=datetime.date.today()).\
+            filter(closes__gte=datetime.date.today())
+
+    def upcoming(self):
+        return self.filter(opens__gt=datetime.date.today())
+
+
 class Survey(models.Model):
     title = models.CharField(max_length=60)
     opens = models.DateField()
     closes = models.DateField(blank=True)
+
+    objects = SurveyManager()
 
     def __unicode__(self):
         return u'%s (Opens %s, closes %s)' % (self.title,
