@@ -1,5 +1,19 @@
 from django.contrib import admin
+from django import forms
 from survey.models import Survey, Question, Answer
+
+
+class SurveyForm(forms.ModelForm):
+    class Meta:
+        model = Survey
+
+    def clean(self):
+        opens = self.cleaned_data.get('opens')
+        closes = self.cleaned_data.get('closes')
+        if opens and closes and opens > closes:
+            raise forms.ValidationError("Opens date cannot come "
+                                        "after closes date.")
+        return self.cleaned_data
 
 
 class QuestionsInline(admin.TabularInline):
@@ -10,7 +24,9 @@ class QuestionsInline(admin.TabularInline):
 class AnswersInline(admin.TabularInline):
     model = Answer
 
+
 class SurveyAdmin(admin.ModelAdmin):
+    form = SurveyForm
     inlines = [QuestionsInline]
 
 

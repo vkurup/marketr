@@ -32,6 +32,10 @@ class Survey(models.Model):
             self.closes = self.opens + datetime.timedelta(7)
         super(Survey, self).save(**kwargs)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('survey_detail', (self.pk,))
+
 
 class Question(models.Model):
     question = models.CharField(max_length=200)
