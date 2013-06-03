@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'django_coverage',
     'survey',
 )
 
@@ -155,3 +156,8 @@ LOGGING = {
         },
     }
 }
+
+COVERAGE_MODULE_EXCLUDES = ['tests$', 'settings$', 'urls$',
+                            'common.views.test', '__init__', 'django',
+                            'migrations', 'fixtures$', 'templates$']
+COVERAGE_REPORT_HTML_OUTPUT_DIR = '/home/vinod/dev/marketr/coverage_html'
